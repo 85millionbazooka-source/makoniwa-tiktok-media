@@ -9,13 +9,10 @@ TikTok に予約投稿する動画を、Metricool に渡すまでの間だけ置
    - 200 が返ることを `curl -s -o /dev/null -w "%{http_code}" <URL>` で確かめる。
 3. **Metricool**：Claude の Metricool コネクタで、この URL を動画として予約する（TikTok はタイトル必須）。公開の投稿はオーナーの OK が出た物だけ。
 4. **取り込みの確認**：Metricool の予約に動画が入ったこと、TikTok に載ったことを確かめる。
-5. **消す**：ブランチを README だけの commit に戻して強制 push する。
-   ```
-   git fetch origin claude/project-thread-kamuqb
-   git reset --hard <README だけの commit>
-   git push --force-with-lease=claude/project-thread-kamuqb:<消す前の commit> origin HEAD:claude/project-thread-kamuqb
-   ```
-   クラウドのスレッドから止められずに通る（2026-10-13 に試験済み）。
+5. **消す**：TikTok に載ったのを確かめたら、ブランチで `git rm v/<名前>.mp4` をして、普通に commit して push する。履歴は書き換えない（強制 push は自動の安全判定で止まるので使わない）。
+   - 消した後、raw の URL が 404 になることを確かめる（CDN に約5分残る）。
+   - 古い commit には残るが、公開する宣伝動画だけを置くのでよいとした。
+   - 詳しい手順（Metricool の項目を含む）は、プロジェクトの `plans/TikTok予約の手順.md`。
 
 ## 大きさの上限
 - GitHub：1ファイル 100MB まで（50MB を超えると警告）。
@@ -23,8 +20,7 @@ TikTok に予約投稿する動画を、Metricool に渡すまでの間だけ置
 
 ## 分かっている事と未確認の事
 - raw の URL は転送なしの直リンクで 200、`content-type: application/octet-stream`（2026-10-13 確認）。
-- 試し投稿（2026-10-12）で Metricool が取り込めたリリースの添付の URL も octet-stream だった。なので取り込めるはずだが、**raw の URL での取り込みは未確認**。次の本当の投稿で確かめる。
-- 強制 push で外しても、古い commit は commit の番号を知っていれば読め、約5分は CDN に残る。宣伝用で公開前提の動画だけを置くので、それでよいと判断した。
+- raw の URL での取り込みは、DOUBLE CAST（2026-10-13 公開）で通った。Metricool は予約の時点で動画を自分のサーバーへ写す。
 - リリース（クラウドからは作成・削除とも 403、PC からは削除が安全判定で止まる）は使わない。古いリリース `trial-001` が残っている（PC かオーナーが消せる）。
 
 ## 取り込めなかった時の代わり
